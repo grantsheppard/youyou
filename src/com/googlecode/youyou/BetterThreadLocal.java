@@ -4,24 +4,19 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
-/**
- * Created by gsheppard on 8/06/14.
- */
 public class BetterThreadLocal {
     private Proxy proxy;
 
     public static <T> T threadLocal(Class<T> clazz, InitialValueFactory<T> initialValueFactory) {
-        InvocationHandler handler = new MyInvocationHandler(initialValueFactory);
-        return (T) Proxy.newProxyInstance(clazz.getClassLoader(),
-                new Class[]{clazz},
-                handler);
+        InvocationHandler handler = new InvocationHandlerDelegate(initialValueFactory);
+        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, handler);
     }
 
-    private static class MyInvocationHandler<T> implements InvocationHandler {
+    private static class InvocationHandlerDelegate<T> implements InvocationHandler {
         private ThreadLocal<T> threadLocal = new ThreadLocal<>();
         private InitialValueFactory<T> initialValueFactory;
 
-        public MyInvocationHandler(InitialValueFactory<T> initialValueFactory) {
+        public InvocationHandlerDelegate(InitialValueFactory<T> initialValueFactory) {
             this.initialValueFactory = initialValueFactory;
         }
 
