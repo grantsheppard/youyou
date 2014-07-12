@@ -8,8 +8,8 @@ public class BetterThreadLocal {
     private Proxy proxy;
 
     public static <T> T threadLocal(Class<T> clazz, InitialValueFactory<T> initialValueFactory) {
-        InvocationHandler handler = new InvocationHandlerDelegate(initialValueFactory);
-        return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, handler);
+        InvocationHandler handler = new InvocationHandlerDelegate<T>(initialValueFactory);
+        return clazz.cast(Proxy.newProxyInstance(clazz.getClassLoader(), new Class[]{clazz}, handler));
     }
 
     private static class InvocationHandlerDelegate<T> implements InvocationHandler {
