@@ -1,4 +1,4 @@
-package com.googlecode.youyou;
+package com.googlecode.youyou.dependency;
 
 import java.util.List;
 

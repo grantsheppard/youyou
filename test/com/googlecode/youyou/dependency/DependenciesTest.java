@@ -1,26 +1,26 @@
-package com.googlecode.youyou;
+package com.googlecode.youyou.dependency;
 
-import org.junit.Test;
+import org.testng.annotations.Test;
 
-import static com.googlecode.youyou.Dependencies.checkForMissingDependencies;
+import static com.googlecode.youyou.dependency.Dependencies.checkForMissingDependencies;
 
 public class DependenciesTest {
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void failWhenOnlyDependencyIsNull() {
         checkForMissingDependencies(null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void failWhenFirstDependencyIsNullAndSecondIsNot() {
         checkForMissingDependencies(null, "test");
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void failWhenFirstDependencyIsNotNullAndSecondIs() {
         checkForMissingDependencies("test", (Object) null);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void failWhenAllDependenciesAreNull() {
         checkForMissingDependencies(null, (Object) null);
     }

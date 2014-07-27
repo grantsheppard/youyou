@@ -1,13 +1,13 @@
-package com.googlecode.youyou;
+package com.googlecode.youyou.concurrency;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
 
 import java.util.List;
 
 import static com.google.common.collect.Lists.asList;
-import static com.googlecode.youyou.BetterThreadLocal.InitialValueFactory;
-import static com.googlecode.youyou.BetterThreadLocal.threadLocal;
+import static com.googlecode.youyou.concurrency.BetterThreadLocal.InitialValueFactory;
+import static com.googlecode.youyou.concurrency.BetterThreadLocal.threadLocal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -17,16 +17,16 @@ public class BetterThreadLocalTest {
     private final TestRunnableInitialValueFactory initialValueFactory = new TestRunnableInitialValueFactory();
 
     @Test
-    public void twoThreadsResultsInTwoValuesBeingCreated() throws Exception {
+    public void oneThreadLocalIsInitialisedPerThread() throws Exception {
         TestRunnable test = threadLocal(TestRunnable.class, initialValueFactory);
 
-        executeInNewThread(test, test);
+        executeInNewThread(test, test, test);
 
-        assertThat(initialValueFactory.invocationCount, is(equalTo(2)));
+        assertThat(initialValueFactory.invocationCount, is(equalTo(3)));
     }
 
     @Test
-    public void singleThreadResultsInOneValueBeingCreated() throws Exception {
+    public void oneThreadLocalIsInitialisedForSingleThread() throws Exception {
         TestRunnable test = threadLocal(TestRunnable.class, initialValueFactory);
 
         test.testMethod();
@@ -45,7 +45,7 @@ public class BetterThreadLocalTest {
         }
     }
 
-    @Before
+    @BeforeMethod
     public void resetFixture() {
         initialValueFactory.invocationCount = 0;
     }

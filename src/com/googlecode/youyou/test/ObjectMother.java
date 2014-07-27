@@ -1,20 +1,25 @@
-package com.googlecode.youyou;
+package com.googlecode.youyou.test;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Primitives;
 import org.fest.reflect.exception.ReflectionError;
+import org.objenesis.ObjenesisStd;
 
 import java.util.Set;
 
+import static com.google.common.collect.Iterables.contains;
 import static com.google.common.collect.Lists.asList;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.primitives.Primitives.isWrapperType;
-import static org.fest.reflect.core.Reflection.*;
+import static org.fest.reflect.core.Reflection.field;
 
 public class ObjectMother<T> {
     private Class<T> clazz;
     private Set<Field> fields = newHashSet();
+    private boolean randomiseFields;
+    private FieldValueRandomiserFactory fieldValueRandomiserFactory = new TypeDefaultFieldValueRandomiserFactory();
 
     private ObjectMother(Class<T> clazz) {
         this.clazz = clazz;
@@ -35,7 +40,9 @@ public class ObjectMother<T> {
     }
 
     public T build() {
-        T object = constructor().in(clazz).newInstance();
+        T object = new ObjenesisStd().newInstance(clazz);
+        if (randomiseFields)
+            randomiseFields();
         if (!fields.isEmpty())
             for (Field field : fields) {
                 Class clazz = determineFieldType(object, field);
@@ -46,6 +53,22 @@ public class ObjectMother<T> {
                 }
             }
         return object;
+    }
+
+    private void randomiseFields() {
+        for (final java.lang.reflect.Field field : clazz.getDeclaredFields()) {
+            if (!contains(fields, new Predicate<java.lang.reflect.Field>() {
+                @Override
+                public boolean apply(java.lang.reflect.Field input) {
+                    for (Field field : fields) {
+                        return field.name.equals(input.getName());
+                    }
+                    return false;
+                }
+            })) {
+                fields.add(Field.field(field.getName(), fieldValueRandomiserFactory.createFor(field.getType())));
+            }
+        }
     }
 
     private Class determineFieldType(T object, Field field) {
@@ -61,6 +84,16 @@ public class ObjectMother<T> {
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ObjectMother<T> withRandomFields() {
+        this.randomiseFields = true;
+        return this;
+    }
+
+    public ObjectMother<T> withTypeRandomiserFactory(FieldValueRandomiserFactory fieldValueRandomiserFactory) {
+        this.fieldValueRandomiserFactory = fieldValueRandomiserFactory;
+        return this;
     }
 
     public static class Field {
